@@ -1,13 +1,15 @@
 # NetShield-Model
 
-> **LightGBM + Autoencoder (NSL-KDD) with FastAPI demo**
+**Network Intrusion Detection System (NIDS) on NSL-KDD**  
+Combines **LightGBM** (supervised) and **Autoencoder** (unsupervised) to detect both known attacks and zero-day anomalies.  
 
-* **LightGBM** → supervised baseline for known attacks.
-* **Autoencoder (AE)** → anomaly/zero-day detection via reconstruction error.
-* **FastAPI** → minimal `/predict` endpoint for demo.
+## Project Idea  
+In modern cybersecurity, intrusion detection systems (IDS) that rely solely on supervised models often fail to detect novel or zero-day attacks. To address this limitation, this project builds a hybrid pipeline that leverages both supervised and unsupervised approaches:  
 
----
-
+- **LightGBM**: trained on labeled data, highly effective at detecting known attacks and close variants.  
+- **Autoencoder (AE)**: learns the “normal shape” of network traffic and flags anomalies based on reconstruction error, making it valuable for zero-day detection.  
+- **Fusion Strategy**: combines the outputs of both models using an **OR rule** to minimize false negatives — if either model flags an event, it will be marked as suspicious.
+  
 ## Results (NSL-KDD)
 
 **LightGBM** *(best threshold from validation: 0.2569)*
