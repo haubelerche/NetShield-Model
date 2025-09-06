@@ -12,9 +12,7 @@ from sklearn.metrics import (
     average_precision_score, roc_auc_score
 )
 from tensorflow import keras
-
-
-# 1) Đánh giá LGBM
+#lgbm
 def eval_lgbm(data_dir: Path, art_dir: Path, rep_dir: Path):
     Xte = np.load(data_dir / "X_test.npy")
     yte = np.load(data_dir / "y_test.npy")
@@ -25,7 +23,6 @@ def eval_lgbm(data_dir: Path, art_dir: Path, rep_dir: Path):
         names = json.loads(feat_path.read_text(encoding="utf-8"))
         X_infer = pd.DataFrame(Xte, columns=names)
 
-    # Tải model (ưu tiên lgbm_model.pkl, fallback lgbm.pkl)
     lgbm_path = art_dir / "lgbm_model.pkl"
     lgbm = load(lgbm_path)
 
@@ -42,7 +39,6 @@ def eval_lgbm(data_dir: Path, art_dir: Path, rep_dir: Path):
     proba = lgbm.predict_proba(X_infer)[:, 1]
     pred = (proba >= best_th).astype(int)
 
-    # Report
     report_txt = classification_report(yte, pred, digits=4, target_names=["benign", "attack"])
     print(f"LightGBM classification report (threshold {best_th:.4f}):")
     print(report_txt)
@@ -70,7 +66,7 @@ def eval_lgbm(data_dir: Path, art_dir: Path, rep_dir: Path):
     return proba, pred, best_th
 
 
-# 2) Đánh giá AE (Keras)
+#AE
 def eval_autoencoder(data_dir: Path, art_dir: Path, rep_dir: Path):
     Xte = np.load(data_dir / "X_test.npy")
     yte = np.load(data_dir / "y_test.npy")
@@ -93,10 +89,8 @@ def eval_autoencoder(data_dir: Path, art_dir: Path, rep_dir: Path):
     print(report_txt)
     (rep_dir / "classification_ae.txt").write_text(report_txt, encoding="utf-8")
 
-    # ---- Plot: zoom quanh ngưỡng dựa trên benign để tránh bị “đè” về 0 ----
     benign_errs = errs[yte == 0]
     attack_errs = errs[yte == 1]
-    # upper = max(p99.5 của benign, 3*threshold) để nhìn rõ vùng quyết định
     upper = float(max(np.percentile(benign_errs, 99.5), thr * 3.0))
     lower = 0.0
 
@@ -113,7 +107,7 @@ def eval_autoencoder(data_dir: Path, art_dir: Path, rep_dir: Path):
     return errs, y_pred_ae, thr
 
 
-# 3) Fusion OR (tùy chọn)
+# Fusion OR 
 def eval_fusion(yte, lgbm_pred, ae_pred, rep_dir: Path):
     if lgbm_pred is None or ae_pred is None:
         return
